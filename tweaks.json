@@ -190,6 +190,43 @@
       ]
     },
     {
+      "id": "perf-menu-delay",
+      "group": "performance",
+      "os": ["10"],
+      "name": "Show menus faster (100 ms delay)",
+      "values": [
+        { "path": "HKCU:\\Control Panel\\Desktop", "name": "MenuShowDelay", "type": "String", "value": "100" }
+      ]
+    },
+    {
+      "id": "perf-startup-delay",
+      "group": "performance",
+      "os": ["10"],
+      "name": "Remove startup apps launch delay",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize", "name": "StartupDelayInMSec", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "perf-phonelink-bg",
+      "group": "performance",
+      "os": ["10"],
+      "name": "Stop Phone Link running in background",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications\\Microsoft.YourPhone_8wekyb3d8bbwe", "name": "Disabled", "type": "DWord", "value": 1 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications\\Microsoft.YourPhone_8wekyb3d8bbwe", "name": "DisabledByUser", "type": "DWord", "value": 1 }
+      ]
+    },
+    {
+      "id": "perf-delivery-opt",
+      "group": "performance",
+      "os": ["10"],
+      "name": "Stop sharing Windows updates with other PCs (policy)",
+      "values": [
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization", "name": "DODownloadMode", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
       "id": "fx-transparency",
       "group": "effects",
       "os": ["10"],
@@ -211,10 +248,28 @@
       "id": "fx-animations",
       "group": "effects",
       "os": ["10"],
-      "name": "Disable window and taskbar animations (sign out to apply)",
+      "name": "Disable window and taskbar animations",
       "values": [
         { "path": "HKCU:\\Control Panel\\Desktop\\WindowMetrics", "name": "MinAnimate", "type": "String", "value": "0" },
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "TaskbarAnimations", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "fx-shadows",
+      "group": "effects",
+      "os": ["10"],
+      "name": "Disable drop shadows for desktop icon labels",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ListviewShadow", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "fx-alpha-select",
+      "group": "effects",
+      "os": ["10"],
+      "name": "Disable translucent selection rectangle",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ListviewAlphaSelect", "type": "DWord", "value": 0 }
       ]
     }
   ]

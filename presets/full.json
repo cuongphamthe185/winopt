@@ -1,5 +1,5 @@
 {
   "description": "Everything in basic plus disabled visual effects.",
-  "groups": ["taskbar", "ads", "lockscreen", "search", "effects"],
+  "groups": ["taskbar", "ads", "lockscreen", "search", "performance", "effects"],
   "exclude": []
 }
