@@ -8,7 +8,7 @@
   .\winopt.ps1 status
   .\winopt.ps1 backups
   .\winopt.ps1 apply basic -WhatIf
-  .\winopt.ps1 apply full -Only taskbar-news,fx-aero-peek
+  .\winopt.ps1 apply full -Only taskbar-search-icon,fx-aero-peek
   .\winopt.ps1 restore
   .\winopt.ps1 apply full -Yes   # no prompt, still reboots
 #>
@@ -34,8 +34,29 @@ $Rebooting = $false
 
 # --- helpers ---------------------------------------------------------------
 
+$Editions = [ordered]@{ home = 'Home'; pro = 'Pro'; enterprise = 'Enterprise'; education = 'Education' }
+
+# '10' or '11'; empty for anything older (PowerShell 5.1 also runs on Windows 7 and 8.1).
 function Get-OsTag {
-    if ([Environment]::OSVersion.Version.Build -ge 22000) { '11' } else { '10' }
+    $v = [Environment]::OSVersion.Version
+    if ($v.Major -ne 10) { return '' }
+    if ($v.Build -ge 22000) { '11' } else { '10' }
+}
+
+# Edition family from EditionID; empty for Server, IoT and anything unknown.
+function Get-EditionTag($editionId) {
+    switch -Regex ($editionId) {
+        '^Core' { 'home'; break }
+        '^Professional' { 'pro'; break }
+        '^Enterprise' { 'enterprise'; break }
+        '^Education' { 'education'; break }
+        default { '' }
+    }
+}
+
+# No editions list means the tweak works on every edition.
+function Test-EditionSupported($tweak) {
+    -not $tweak.editions -or (@($tweak.editions) -contains $script:Edition)
 }
 
 function Test-Admin {
@@ -105,8 +126,31 @@ function Restart-Pc {
     $script:Rebooting = $true
 }
 
+# Catch typos in tweaks.json early instead of silently never applying a tweak.
+function Assert-Tweaks($all) {
+    $ids = @{}; $seen = @{}
+    foreach ($t in $all) {
+        if ($ids[$t.id]) { throw "tweaks.json: duplicate id '$($t.id)'" }
+        $ids[$t.id] = $true
+        if (-not $t.os -or @($t.os | Where-Object { $_ -notin '10', '11' })) { throw "tweaks.json: invalid os in '$($t.id)'" }
+        if ($null -ne $t.editions -and (-not @($t.editions).Count -or @($t.editions | Where-Object { -not $Editions.Contains([string]$_) }))) {
+            throw "tweaks.json: invalid editions in '$($t.id)'"
+        }
+        foreach ($os in $t.os) {
+            foreach ($v in $t.values) {
+                $key = "$os|$($v.path)|$($v.name)"
+                if ($seen[$key]) { throw "tweaks.json: '$($seen[$key])' and '$($t.id)' both write $($v.path)\$($v.name)" }
+                $seen[$key] = $t.id
+            }
+        }
+    }
+}
+
+# All tweaks go to $AllTweaks; returns only those for this Windows version.
 function Get-Tweaks {
-    $all = (Get-Content (Join-Path $PSScriptRoot 'tweaks.json') -Raw -Encoding UTF8 | ConvertFrom-Json).tweaks
+    $all = @((Get-Content (Join-Path $PSScriptRoot 'tweaks.json') -Raw -Encoding UTF8 | ConvertFrom-Json).tweaks)
+    Assert-Tweaks $all
+    $script:AllTweaks = $all
     @($all | Where-Object { $_.os -contains $script:Os })
 }
 
@@ -117,6 +161,8 @@ function Select-Tweaks($tweaks) {
     $picked = @($tweaks | Where-Object { $p.groups -contains $_.group -and $p.exclude -notcontains $_.id })
     if ($Only) {
         $unknown = @($Only | Where-Object { $picked.id -notcontains $_ })
+        $otherOs = @($unknown | Where-Object { $tweaks.id -notcontains $_ -and $script:AllTweaks.id -contains $_ })
+        if ($otherOs) { throw "Not available on Windows ${Os}: $($otherOs -join ', ')" }
         if ($unknown) { throw "Not in preset '$Preset': $($unknown -join ', ')" }
         $picked = @($picked | Where-Object { $Only -contains $_.id })
     }
@@ -127,24 +173,29 @@ function Select-Tweaks($tweaks) {
 
 function Invoke-List($tweaks) {
     $tweaks | ForEach-Object {
-        [pscustomobject]@{ Id = $_.id; Group = $_.group; Admin = (Test-NeedsAdmin $_); Name = $_.name }
+        $eds = if ($_.editions) { @($_.editions) -join ',' } else { 'all' }
+        [pscustomobject]@{ Id = $_.id; Group = $_.group; Admin = (Test-NeedsAdmin $_); Editions = $eds; Name = $_.name }
     } | Format-Table -AutoSize | Out-String -Width 200 | Write-Host
 }
 
 function Invoke-Status($tweaks) {
-    Write-Host "Windows $Os | admin: $IsAdmin"
+    Write-Host "$OsLabel | admin: $IsAdmin"
     $tweaks | ForEach-Object {
-        [pscustomobject]@{ Id = $_.id; Group = $_.group; State = (Get-TweakState $_); Name = $_.name }
+        $state = if (Test-EditionSupported $_) { Get-TweakState $_ } else { 'n/a' }
+        [pscustomobject]@{ Id = $_.id; Group = $_.group; State = $state; Name = $_.name }
     } | Format-Table -AutoSize | Out-String -Width 200 | Write-Host
 }
 
 function Invoke-Apply($tweaks) {
-    $todo = @(); $skipped = @()
+    $todo = @(); $noEdition = @(); $skipped = @()
     foreach ($t in (Select-Tweaks $tweaks)) {
+        # Edition first, so an unsupported tweak is never reported as "needs admin".
+        if (-not (Test-EditionSupported $t)) { $noEdition += $t.id; continue }
         if ((Get-TweakState $t) -eq 'applied') { continue }
         if ((Test-NeedsAdmin $t) -and -not $IsAdmin) { $skipped += $t.id; continue }
         $todo += $t
     }
+    if ($noEdition) { Write-Warning "Not supported on ${OsLabel}, skipped: $($noEdition -join ', ')" }
     if ($skipped) { Write-Warning "Needs admin, skipped: $($skipped -join ', ')" }
     if (-not $todo) {
         if ($skipped) {
@@ -170,7 +221,7 @@ function Invoke-Apply($tweaks) {
     $records = @($todo | ForEach-Object { $_.values } | ForEach-Object { Read-Value $_.path $_.name })
     New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null
     $file = Join-Path $BackupDir ("{0}_{1}_{2}.json" -f $env:COMPUTERNAME, $env:USERNAME, (Get-Date -Format 'yyyyMMdd-HHmmss'))
-    [ordered]@{ preset = $Preset; os = $Os; date = (Get-Date).ToString('s'); values = $records } |
+    [ordered]@{ preset = $Preset; os = $Os; edition = $Edition; date = (Get-Date).ToString('s'); values = $records } |
         ConvertTo-Json -Depth 5 | Set-Content $file -Encoding UTF8
     Write-Host "Backup: $file"
 
@@ -205,12 +256,17 @@ function Invoke-Restore {
         return
     }
     $backup = Get-Content $file -Raw -Encoding UTF8 | ConvertFrom-Json
+    # Checked before anything else, so a backup from another version is never marked as used.
+    if ($backup.os -ne $Os) {
+        $made = if ($backup.os) { "Windows $($backup.os)" } else { 'an unknown Windows version' }
+        throw "This backup was made on $made and cannot be restored on Windows $Os."
+    }
     Write-Host "Restoring from: $file"
 
     # Only restore values winopt itself manages, so a tampered backup cannot write anything else.
+    # Not filtered by edition: anything winopt wrote must stay undoable.
     $known = @{}
-    (Get-Content (Join-Path $PSScriptRoot 'tweaks.json') -Raw -Encoding UTF8 | ConvertFrom-Json).tweaks.values |
-        ForEach-Object { $known["$($_.path)|$($_.name)"] = $true }
+    $script:AllTweaks.values | ForEach-Object { $known["$($_.path)|$($_.name)"] = $true }
     $types = 'DWord', 'QWord', 'String', 'ExpandString', 'MultiString', 'Binary'
     $valid = @($backup.values | Where-Object { $known["$($_.path)|$($_.name)"] -and (-not $_.exists -or $types -contains $_.type) })
     $rejected = @($backup.values).Count - $valid.Count
@@ -267,6 +323,7 @@ function Get-Backups {
             [pscustomobject]@{
                 '#'    = ++$i
                 Date   = $_.LastWriteTime.ToString('yyyy-MM-dd HH:mm')
+                OS     = $(if ($b -and $b.os) { $b.os } else { '?' })
                 Preset = $(if ($b) { $b.preset } else { '?' })
                 Values = $(if ($b) { @($b.values).Count } else { 0 })
                 Used   = $(if ($_.Name -like '*.restored') { 'yes' } else { 'no' })
@@ -278,7 +335,7 @@ function Get-Backups {
 function Invoke-Backups {
     $list = @(Get-Backups)
     if (-not $list) { Write-Host 'No backups yet.' -ForegroundColor Yellow; return $list }
-    $list | Select-Object '#', Date, Preset, Values, Used | Format-Table -AutoSize | Out-String | Write-Host
+    $list | Select-Object '#', Date, OS, Preset, Values, Used | Format-Table -AutoSize | Out-String | Write-Host
     $list
 }
 
@@ -291,7 +348,7 @@ function Request-Admin {
         Start-Process powershell.exe -Verb RunAs -ArgumentList $argList -WorkingDirectory $PSScriptRoot
         return $true
     } catch {
-        $n = @($script:Tweaks | Where-Object { Test-NeedsAdmin $_ }).Count
+        $n = @($script:Tweaks | Where-Object { (Test-NeedsAdmin $_) -and (Test-EditionSupported $_) }).Count
         Write-Host "Admin was not granted. $n tweaks need admin and will be skipped." -ForegroundColor Yellow
         $answer = Read-Host 'Continue without admin? [y/N]'
         if ($answer -match '^(y|yes)$') { return $false }
@@ -321,7 +378,7 @@ function Invoke-Menu {
     }
     while ($true) {
         Write-Host ''
-        Write-Host "winopt - Windows $Os cleanup    [admin: $(if ($IsAdmin) { 'yes' } else { 'no' })]" -ForegroundColor Cyan
+        Write-Host "winopt - $OsLabel cleanup    [admin: $(if ($IsAdmin) { 'yes' } else { 'no' })]" -ForegroundColor Cyan
         if ($otherUser) {
             Write-Host "WARNING: running as $me, but $console is signed in. Changes will apply to $me." -ForegroundColor Red
         }
@@ -361,9 +418,14 @@ function Invoke-Menu {
 # --- main ------------------------------------------------------------------
 
 try {
+    # Version and edition are checked before any command, including read-only ones.
     $Os = Get-OsTag
+    if (-not $Os) { throw "Windows $([Environment]::OSVersion.Version) is not supported. Only Windows 10 and 11 are." }
+    $EditionId = [string](Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction SilentlyContinue).EditionID
+    $Edition = Get-EditionTag $EditionId
+    if (-not $Edition) { throw "Windows edition '$EditionId' is not supported. Only Home, Pro, Enterprise and Education are." }
+    $OsLabel = "Windows $Os $($Editions[$Edition])"
     $IsAdmin = Test-Admin
-    if ($Os -ne '10') { throw "Windows $Os is not supported yet." }
 
     $Tweaks = Get-Tweaks
     switch ($Command) {

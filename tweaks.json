@@ -10,9 +10,18 @@
       ]
     },
     {
+      "id": "taskbar-widgets",
+      "group": "taskbar",
+      "os": ["11"],
+      "name": "Disable Widgets and its taskbar button (policy)",
+      "values": [
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Dsh", "name": "AllowNewsAndInterests", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
       "id": "taskbar-search-icon",
       "group": "taskbar",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Shrink taskbar search box to an icon",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "name": "SearchboxTaskbarMode", "type": "DWord", "value": 1 }
@@ -21,7 +30,7 @@
     {
       "id": "taskbar-taskview",
       "group": "taskbar",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Hide Task View button (Win+Tab still works)",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowTaskViewButton", "type": "DWord", "value": 0 }
@@ -66,7 +75,7 @@
     {
       "id": "ads-start-suggestions",
       "group": "ads",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable app suggestions in Start",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SystemPaneSuggestionsEnabled", "type": "DWord", "value": 0 },
@@ -74,9 +83,27 @@
       ]
     },
     {
+      "id": "ads-start-recommendations",
+      "group": "ads",
+      "os": ["11"],
+      "name": "Disable tips, shortcuts and new app recommendations in Start",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "Start_IrisRecommendations", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "ads-start-account",
+      "group": "ads",
+      "os": ["11"],
+      "name": "Disable account-related notifications in Start",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "Start_AccountNotifications", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
       "id": "ads-tips",
       "group": "ads",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable Windows tips and tricks notifications",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338389Enabled", "type": "DWord", "value": 0 },
@@ -86,7 +113,7 @@
     {
       "id": "ads-silent-apps",
       "group": "ads",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Block silent install of promoted apps",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SilentInstalledAppsEnabled", "type": "DWord", "value": 0 },
@@ -97,7 +124,7 @@
     {
       "id": "ads-settings-suggestions",
       "group": "ads",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable suggested content in Settings",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338393Enabled", "type": "DWord", "value": 0 },
@@ -108,7 +135,7 @@
     {
       "id": "ads-welcome",
       "group": "ads",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable Welcome / 'Get the most out of Windows' screens",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-310093Enabled", "type": "DWord", "value": 0 },
@@ -118,7 +145,7 @@
     {
       "id": "ads-explorer-sync",
       "group": "ads",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Hide OneDrive/Office promos in File Explorer",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowSyncProviderNotifications", "type": "DWord", "value": 0 }
@@ -127,7 +154,7 @@
     {
       "id": "ads-tailored",
       "group": "ads",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable tailored experiences from diagnostic data",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Privacy", "name": "TailoredExperiencesWithDiagnosticDataEnabled", "type": "DWord", "value": 0 }
@@ -136,16 +163,46 @@
     {
       "id": "ads-id",
       "group": "ads",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable advertising ID",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo", "name": "Enabled", "type": "DWord", "value": 0 }
       ]
     },
     {
+      "id": "ads-consumer-features",
+      "group": "ads",
+      "os": ["11"],
+      "editions": ["enterprise", "education"],
+      "name": "Turn off Microsoft consumer experiences (policy)",
+      "values": [
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent", "name": "DisableWindowsConsumerFeatures", "type": "DWord", "value": 1 }
+      ]
+    },
+    {
+      "id": "ads-cloud-content",
+      "group": "ads",
+      "os": ["11"],
+      "editions": ["enterprise", "education"],
+      "name": "Turn off cloud optimized content (policy)",
+      "values": [
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent", "name": "DisableCloudOptimizedContent", "type": "DWord", "value": 1 }
+      ]
+    },
+    {
+      "id": "ads-tips-policy",
+      "group": "ads",
+      "os": ["11"],
+      "editions": ["enterprise", "education"],
+      "name": "Do not show Windows tips (policy)",
+      "values": [
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent", "name": "DisableSoftLanding", "type": "DWord", "value": 1 }
+      ]
+    },
+    {
       "id": "lock-facts",
       "group": "lockscreen",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable fun facts and tips on lock screen",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "RotatingLockScreenOverlayEnabled", "type": "DWord", "value": 0 },
@@ -155,10 +212,20 @@
     {
       "id": "lock-spotlight",
       "group": "lockscreen",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable Windows Spotlight on lock screen",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "RotatingLockScreenEnabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "lock-desktop-spotlight",
+      "group": "lockscreen",
+      "os": ["11"],
+      "editions": ["enterprise", "education"],
+      "name": "Disable Windows Spotlight on desktop background (policy)",
+      "values": [
+        { "path": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\CloudContent", "name": "DisableSpotlightCollectionOnDesktop", "type": "DWord", "value": 1 }
       ]
     },
     {
@@ -174,7 +241,7 @@
     {
       "id": "search-web-policy",
       "group": "search",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable web suggestions in search box (policy)",
       "values": [
         { "path": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\Explorer", "name": "DisableSearchBoxSuggestions", "type": "DWord", "value": 1 }
@@ -183,7 +250,7 @@
     {
       "id": "search-highlights",
       "group": "search",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable search highlights",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings", "name": "IsDynamicSearchBoxEnabled", "type": "DWord", "value": 0 }
@@ -192,7 +259,7 @@
     {
       "id": "perf-menu-delay",
       "group": "performance",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Show menus faster (100 ms delay)",
       "values": [
         { "path": "HKCU:\\Control Panel\\Desktop", "name": "MenuShowDelay", "type": "String", "value": "100" }
@@ -201,7 +268,7 @@
     {
       "id": "perf-startup-delay",
       "group": "performance",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Remove startup apps launch delay",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize", "name": "StartupDelayInMSec", "type": "DWord", "value": 0 }
@@ -210,7 +277,7 @@
     {
       "id": "perf-phonelink-bg",
       "group": "performance",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Stop Phone Link running in background",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications\\Microsoft.YourPhone_8wekyb3d8bbwe", "name": "Disabled", "type": "DWord", "value": 1 },
@@ -220,7 +287,7 @@
     {
       "id": "perf-delivery-opt",
       "group": "performance",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Stop sharing Windows updates with other PCs (policy)",
       "values": [
         { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization", "name": "DODownloadMode", "type": "DWord", "value": 0 }
@@ -229,7 +296,7 @@
     {
       "id": "fx-transparency",
       "group": "effects",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable transparency effects",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "EnableTransparency", "type": "DWord", "value": 0 }
@@ -238,7 +305,7 @@
     {
       "id": "fx-aero-peek",
       "group": "effects",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable Aero Peek",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\DWM", "name": "EnableAeroPeek", "type": "DWord", "value": 0 }
@@ -247,7 +314,7 @@
     {
       "id": "fx-animations",
       "group": "effects",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable window and taskbar animations",
       "values": [
         { "path": "HKCU:\\Control Panel\\Desktop\\WindowMetrics", "name": "MinAnimate", "type": "String", "value": "0" },
@@ -257,7 +324,7 @@
     {
       "id": "fx-shadows",
       "group": "effects",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable drop shadows for desktop icon labels",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ListviewShadow", "type": "DWord", "value": 0 }
@@ -266,7 +333,7 @@
     {
       "id": "fx-alpha-select",
       "group": "effects",
-      "os": ["10"],
+      "os": ["10", "11"],
       "name": "Disable translucent selection rectangle",
       "values": [
         { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ListviewAlphaSelect", "type": "DWord", "value": 0 }
