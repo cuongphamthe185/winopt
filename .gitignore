@@ -1,3 +1,6 @@
 # Machine-specific backups (contain machine and user names)
 backups/
 *.log
+.env
+# Local handover notes, not for the repo
+winopt-memory.md
