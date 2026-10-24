@@ -181,8 +181,13 @@ function Invoke-List($tweaks) {
 function Invoke-Status($tweaks) {
     Write-Host "$OsLabel | admin: $IsAdmin"
     $tweaks | ForEach-Object {
-        $state = if (Test-EditionSupported $_) { Get-TweakState $_ } else { 'n/a' }
-        [pscustomobject]@{ Id = $_.id; Group = $_.group; State = $state; Name = $_.name }
+        # Note says why apply would skip the tweak.
+        $state = 'n/a'; $note = "not for $OsLabel"
+        if (Test-EditionSupported $_) {
+            $state = Get-TweakState $_
+            $note = if ((Test-NeedsAdmin $_) -and -not $IsAdmin) { 'needs admin' } else { '' }
+        }
+        [pscustomobject]@{ Id = $_.id; Group = $_.group; State = $state; Note = $note; Name = $_.name }
     } | Format-Table -AutoSize | Out-String -Width 200 | Write-Host
 }
 
@@ -195,8 +200,12 @@ function Invoke-Apply($tweaks) {
         if ((Test-NeedsAdmin $t) -and -not $IsAdmin) { $skipped += $t.id; continue }
         $todo += $t
     }
-    if ($noEdition) { Write-Warning "Not supported on ${OsLabel}, skipped: $($noEdition -join ', ')" }
-    if ($skipped) { Write-Warning "Needs admin, skipped: $($skipped -join ', ')" }
+    if ($noEdition) {
+        Write-Host "Skipped $($noEdition.Count) tweaks not supported on ${OsLabel}. Run 'status' to see them (n/a)." -ForegroundColor Yellow
+    }
+    if ($skipped) {
+        Write-Host "Skipped $($skipped.Count) tweaks that need admin. Run winopt.bat and click Yes to include them." -ForegroundColor Yellow
+    }
     if (-not $todo) {
         if ($skipped) {
             Write-Host "All other tweaks in preset '$Preset' are already applied. Run as Administrator to apply the rest." -ForegroundColor Yellow

@@ -37,7 +37,7 @@ powershell -ExecutionPolicy Bypass -File .\winopt.ps1 <command>
 | (no command) | Interactive menu (add `-Elevate` to ask for admin, as `winopt.bat` does) |
 | `list` | List the tweaks for this Windows version, with the editions each one supports |
 | `backups` | List all backups, newest first (`Used = yes` means already restored once) |
-| `status` | Show each tweak's state: `applied`, `partial`, `default`, or `n/a` (not supported on this edition) |
+| `status` | Show each tweak's state: `applied`, `partial`, `default`, or `n/a` (not supported on this edition). The `Note` column says why `apply` would skip a tweak (`needs admin` or not for this edition) |
 | `apply basic -WhatIf` | Preview changes without writing anything |
 | `apply basic` | Back up, apply the `basic` preset, then restart |
 | `apply full` | Same as `basic`, plus disables visual effects (transparency, Aero Peek, animations, shadows) |
@@ -57,7 +57,7 @@ powershell -ExecutionPolicy Bypass -File .\winopt.ps1 <command>
 ## Windows versions and editions
 - **Version:** Windows 10 and Windows 11 each have their own tweak list. A PC only runs the tweaks for its own version. Older Windows versions are refused.
 - **Edition:** Home, Pro, Enterprise and Education are supported. Other editions (Server, IoT, unknown) are refused before anything runs.
-- Some tweaks only work on certain editions. On other editions they are skipped with a yellow warning and `status` shows `n/a`; everything else still runs.
+- Some tweaks only work on certain editions. On other editions `apply` skips them with a short yellow note and `status` shows `n/a`; everything else still runs.
 - `restore` refuses a backup made on another Windows version (for example a Windows 10 backup on a PC upgraded to Windows 11).
 
 > **Enterprise / Education tweaks are not well tested yet.** `ads-consumer-features`, `ads-cloud-content`, `ads-tips-policy` and `lock-desktop-spotlight` follow Microsoft's policy documentation but have not been tried on real Enterprise or Education PCs. If you find a bug or have a working config for these editions, please open an issue or a pull request.

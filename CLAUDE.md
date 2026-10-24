@@ -28,7 +28,8 @@ PowerShell CLI that hides Windows UI clutter (taskbar items, ads, suggestions) v
 ## Windows version and edition
 - Version is strict: a PC only runs tweaks whose `os` lists its version (`10` or `11`, by build >= 22000). Non-Windows-10-family versions stop with an error.
 - Edition is checked before any command, read-only ones included. EditionID maps to `home` (Core*), `pro` (Professional*), `enterprise` (Enterprise*), `education` (Education*); anything else (Server, IoT, unknown) stops with an error.
-- A tweak without `editions` runs on every edition. Unsupported tweaks are skipped with a yellow warning (checked before "applied" and "needs admin"); `status` shows `n/a`.
+- A tweak without `editions` runs on every edition. Unsupported tweaks are skipped (checked before "applied" and "needs admin"); `status` shows `n/a`.
+- Skips in `apply` are one short yellow line per reason (count + hint), no id lists; `status` has a `Note` column with the reason per tweak (`needs admin`, `not for <Windows label>`).
 - `restore` refuses a backup whose `os` differs from the current version or is missing, before anything else. It does not filter by edition, so anything winopt wrote stays undoable.
 - `tweaks.json` is validated on load: valid `os` and `editions`, unique ids, no two tweaks writing the same value on the same version.
 
