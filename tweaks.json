@@ -1,0 +1,221 @@
+{
+  "tweaks": [
+    {
+      "id": "taskbar-news",
+      "group": "taskbar",
+      "os": ["10"],
+      "name": "Hide News and Interests (weather) on taskbar",
+      "values": [
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Feeds", "name": "EnableFeeds", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "taskbar-search-icon",
+      "group": "taskbar",
+      "os": ["10"],
+      "name": "Shrink taskbar search box to an icon",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "name": "SearchboxTaskbarMode", "type": "DWord", "value": 1 }
+      ]
+    },
+    {
+      "id": "taskbar-taskview",
+      "group": "taskbar",
+      "os": ["10"],
+      "name": "Hide Task View button (Win+Tab still works)",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowTaskViewButton", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "taskbar-cortana",
+      "group": "taskbar",
+      "os": ["10"],
+      "name": "Hide Cortana button",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowCortanaButton", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "taskbar-meetnow",
+      "group": "taskbar",
+      "os": ["10"],
+      "name": "Hide Meet Now icon",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer", "name": "HideSCAMeetNow", "type": "DWord", "value": 1 }
+      ]
+    },
+    {
+      "id": "taskbar-people",
+      "group": "taskbar",
+      "os": ["10"],
+      "name": "Hide People button",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\People", "name": "PeopleBand", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "taskbar-ink",
+      "group": "taskbar",
+      "os": ["10"],
+      "name": "Hide Windows Ink Workspace button",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\PenWorkspace", "name": "PenWorkspaceButtonDesiredVisibility", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "ads-start-suggestions",
+      "group": "ads",
+      "os": ["10"],
+      "name": "Disable app suggestions in Start",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SystemPaneSuggestionsEnabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338388Enabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "ads-tips",
+      "group": "ads",
+      "os": ["10"],
+      "name": "Disable Windows tips and tricks notifications",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338389Enabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SoftLandingEnabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "ads-silent-apps",
+      "group": "ads",
+      "os": ["10"],
+      "name": "Block silent install of promoted apps",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SilentInstalledAppsEnabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "PreInstalledAppsEnabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "OemPreInstalledAppsEnabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "ads-settings-suggestions",
+      "group": "ads",
+      "os": ["10"],
+      "name": "Disable suggested content in Settings",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338393Enabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-353694Enabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-353696Enabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "ads-welcome",
+      "group": "ads",
+      "os": ["10"],
+      "name": "Disable Welcome / 'Get the most out of Windows' screens",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-310093Enabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\UserProfileEngagement", "name": "ScoobeSystemSettingEnabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "ads-explorer-sync",
+      "group": "ads",
+      "os": ["10"],
+      "name": "Hide OneDrive/Office promos in File Explorer",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowSyncProviderNotifications", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "ads-tailored",
+      "group": "ads",
+      "os": ["10"],
+      "name": "Disable tailored experiences from diagnostic data",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Privacy", "name": "TailoredExperiencesWithDiagnosticDataEnabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "ads-id",
+      "group": "ads",
+      "os": ["10"],
+      "name": "Disable advertising ID",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo", "name": "Enabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "lock-facts",
+      "group": "lockscreen",
+      "os": ["10"],
+      "name": "Disable fun facts and tips on lock screen",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "RotatingLockScreenOverlayEnabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338387Enabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "lock-spotlight",
+      "group": "lockscreen",
+      "os": ["10"],
+      "name": "Disable Windows Spotlight on lock screen",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "RotatingLockScreenEnabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "search-web",
+      "group": "search",
+      "os": ["10"],
+      "name": "Disable Bing/web results in Start search",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "name": "BingSearchEnabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "name": "CortanaConsent", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "search-web-policy",
+      "group": "search",
+      "os": ["10"],
+      "name": "Disable web suggestions in search box (policy)",
+      "values": [
+        { "path": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\Explorer", "name": "DisableSearchBoxSuggestions", "type": "DWord", "value": 1 }
+      ]
+    },
+    {
+      "id": "search-highlights",
+      "group": "search",
+      "os": ["10"],
+      "name": "Disable search highlights",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings", "name": "IsDynamicSearchBoxEnabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "fx-transparency",
+      "group": "effects",
+      "os": ["10"],
+      "name": "Disable transparency effects",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "EnableTransparency", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "fx-aero-peek",
+      "group": "effects",
+      "os": ["10"],
+      "name": "Disable Aero Peek",
+      "values": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\DWM", "name": "EnableAeroPeek", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "fx-animations",
+      "group": "effects",
+      "os": ["10"],
+      "name": "Disable window and taskbar animations (sign out to apply)",
+      "values": [
+        { "path": "HKCU:\\Control Panel\\Desktop\\WindowMetrics", "name": "MinAnimate", "type": "String", "value": "0" },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "TaskbarAnimations", "type": "DWord", "value": 0 }
+      ]
+    }
+  ]
+}

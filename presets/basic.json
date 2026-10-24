@@ -1,0 +1,5 @@
+{
+  "description": "Taskbar clutter, ads, lock screen and web search. Keeps visual effects.",
+  "groups": ["taskbar", "ads", "lockscreen", "search"],
+  "exclude": []
+}

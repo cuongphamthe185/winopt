@@ -1,0 +1,26 @@
+# winopt
+
+PowerShell CLI that hides Windows UI clutter (taskbar items, ads, suggestions) via registry, with backup and restore. Windows 10 only for now; Windows 11 is planned. No GUI.
+
+## Layout
+- `winopt.ps1`: entry point (`list`, `status`, `apply <preset>`, `restore`, plus `-WhatIf`, `-Only`, `-From`, `-NoRestart`)
+- `tweaks.json`: all tweaks (id, group, os, name, registry values)
+- `presets/*.json`: which groups/ids a preset applies
+- `backups/`: per-run JSON backups, git-ignored
+
+## Rules
+- Code language: all code, identifiers, comments, JSON data, output messages and commit messages in English. Keep them short and readable.
+- Communication with the user: always reply in Vietnamese, short but complete.
+- Security check after every task: before finishing or committing, review the diff and outputs for keys, tokens, passwords, credentials or personal data (user names, machine names, emails, paths with user names). Never commit `backups/`. Report the result of this check to the user.
+
+## Tweak conventions
+- Every tweak must be reversible by `restore`; never delete a key or value that existed before.
+- Prefer HKCU. Paths under HKLM or any `\Policies\` key are treated as admin-only and skipped without elevation.
+- Some HKCU keys are ACL-protected on recent Windows 10 builds (e.g. `CurrentVersion\Feeds`); use the matching policy key instead.
+- Supported value types: `DWord`, `QWord`, `String`, `ExpandString`, `MultiString`, `Binary`.
+- Test new tweaks with `apply <preset> -WhatIf`, then `apply`, `status`, `restore`, `status`.
+
+## Run
+```
+powershell -ExecutionPolicy Bypass -File .\winopt.ps1 status
+```
