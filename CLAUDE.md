@@ -9,7 +9,7 @@ PowerShell CLI that hides Windows UI clutter (taskbar items, ads, suggestions) v
 - `backups/`: per-run JSON backups, git-ignored
 
 ## Rules
-- Code language: all code, identifiers, comments, JSON data, output messages and commit messages in English. Keep them short and readable.
+- Project language: everything in the repo is English (code, identifiers, comments, JSON data, output messages, README and other docs, commit messages). Keep it short and readable.
 - Commit messages: English, one short line.
 - Communication with the user: always reply in Vietnamese, short but complete.
 - Ask before changing the system: any run that writes to the machine (`apply` or `restore` without `-WhatIf`, direct registry edits) needs the user's review and OK first. Read-only runs (`list`, `status`, `-WhatIf`) are fine.

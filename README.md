@@ -1,32 +1,32 @@
 # winopt
 
-Script PowerShell giúp dọn giao diện Windows 10: ẩn thời tiết/news, các nút thừa trên taskbar, quảng cáo, gợi ý và kết quả Bing. Có sẵn sao lưu và khôi phục.
+PowerShell CLI that declutters Windows 10: hides News and Interests, extra taskbar buttons, ads, suggestions and Bing results. Every change is backed up and can be restored.
 
-## Cách chạy
-Mở PowerShell trong thư mục này. Không cần đổi ExecutionPolicy của máy, chỉ cần thêm `-ExecutionPolicy Bypass` khi chạy:
+## Usage
+Run from this folder. No need to change the machine's ExecutionPolicy:
 
 ```
-powershell -ExecutionPolicy Bypass -File .\winopt.ps1 <lệnh>
+powershell -ExecutionPolicy Bypass -File .\winopt.ps1 <command>
 ```
 
-| Lệnh | Tác dụng |
+| Command | Description |
 |---|---|
-| `list` | Liệt kê tất cả tweak |
-| `status` | Trạng thái từng tweak: `applied` (đã áp dụng) / `partial` (một phần) / `default` (chưa áp dụng) |
-| `apply basic -WhatIf` | Xem trước những gì sẽ đổi, không ghi gì |
-| `apply basic` | Sao lưu rồi áp dụng preset `basic` |
-| `apply full` | Như `basic`, thêm tắt hiệu ứng (transparency, Aero Peek, animation) |
-| `apply full -Only taskbar-news,fx-aero-peek` | Chỉ áp dụng một vài tweak cụ thể |
-| `restore` | Hoàn tác lần `apply` gần nhất; chạy tiếp lần nữa sẽ lùi thêm một bước |
-| `restore -From backups\<file>.json` | Khôi phục theo một file sao lưu cụ thể |
+| `list` | List all tweaks |
+| `status` | Show each tweak's state: `applied`, `partial` or `default` |
+| `apply basic -WhatIf` | Preview changes without writing anything |
+| `apply basic` | Back up, then apply the `basic` preset |
+| `apply full` | Same as `basic`, plus disables visual effects (transparency, Aero Peek, animations) |
+| `apply full -Only taskbar-news,fx-aero-peek` | Apply only the listed tweaks |
+| `restore` | Undo the last `apply`; run again to step back further |
+| `restore -From backups\<file>.json` | Restore from a specific backup |
 
-Thêm `-NoRestart` nếu không muốn script tự khởi động lại Explorer.
+Add `-NoRestart` to skip restarting Explorer.
 
-## Lưu ý
-- Hầu hết tweak chỉ áp dụng cho **user đang chạy script**. Mỗi user cần chạy riêng.
-- Các tweak `taskbar-news`, `taskbar-meetnow`, `search-web-policy` cần quyền Admin (xem cột `Admin` khi chạy `list`). Chạy PowerShell bằng **Run as Administrator**, đăng nhập bằng chính tài khoản đó.
-- Nhóm `effects` cần sign out rồi đăng nhập lại mới thấy đủ.
-- File sao lưu nằm trong `backups/`, có chứa tên máy và tên user, nên đã được loại khỏi git.
+## Notes
+- Most tweaks apply to the **current user** only. Run once per user.
+- `taskbar-news`, `taskbar-meetnow` and `search-web-policy` need admin (see the `Admin` column in `list`). Run PowerShell as Administrator from the same user account.
+- The `effects` group needs a sign-out to fully apply.
+- Backups in `backups/` contain machine and user names and are git-ignored.
 
-## Thêm tweak
-Thêm một mục vào `tweaks.json` (id, group, os, name, values). Nếu nhóm đã có trong preset thì tweak sẽ tự được áp dụng. Thử bằng `-WhatIf` trước.
+## Adding a tweak
+Add an entry to `tweaks.json` (`id`, `group`, `os`, `name`, `values`). If its group is in a preset, the preset picks it up. Test with `-WhatIf` first.
