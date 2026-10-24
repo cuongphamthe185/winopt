@@ -3,7 +3,8 @@
 PowerShell CLI that hides Windows UI clutter (taskbar items, ads, suggestions) via registry, with backup and restore. Windows 10 only for now; Windows 11 is planned. No GUI.
 
 ## Layout
-- `winopt.ps1`: entry point (`list`, `status`, `apply <preset>`, `restore`, plus `-WhatIf`, `-Only`, `-From`, `-Yes`)
+- `winopt.ps1`: entry point (`menu` (default), `list`, `status`, `backups`, `apply <preset>`, `restore`, plus `-WhatIf`, `-Only`, `-From`, `-Yes`, `-Elevate`)
+- `winopt.bat`: double-click launcher; runs `winopt.ps1 menu -Elevate` (UAC prompt)
 - `tweaks.json`: all tweaks (id, group, os, name, registry values)
 - `presets/*.json`: which groups/ids a preset applies
 - `backups/`: per-run JSON backups, git-ignored
@@ -20,6 +21,8 @@ PowerShell CLI that hides Windows UI clutter (taskbar items, ads, suggestions) v
 - After a real run that changed something, the PC reboots after 10 seconds (`shutdown /r /t 10`, cancel with `shutdown /a`). Reboot is mandatory: restarting only Explorer left Windows unstable.
 - Never restart Explorer. Do not add `-NoReboot`.
 - `-Yes` skips only the prompt (for unattended runs); the warning and reboot still happen. Keep docs warning that it reboots without asking.
+- The menu keeps the same warning, prompt and reboot as the CLI. Never add a menu path that writes without confirmation.
+- Menu self-elevation only with `-Elevate`. Warn in red when the elevated user differs from the console user (changes go to that user's HKCU).
 - Nothing pending: print a clear message and exit without prompt or reboot. `-WhatIf` never prompts or reboots, and notes that a real run reboots.
 
 ## Tweak conventions

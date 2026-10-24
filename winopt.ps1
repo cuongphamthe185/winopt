@@ -2,8 +2,11 @@
 .SYNOPSIS
   Hide Windows UI clutter (taskbar items, ads, suggestions) with backup and restore.
 .EXAMPLE
+  .\winopt.ps1                   # interactive menu
+  .\winopt.ps1 menu -Elevate     # menu as admin (used by winopt.bat)
   .\winopt.ps1 list
   .\winopt.ps1 status
+  .\winopt.ps1 backups
   .\winopt.ps1 apply basic -WhatIf
   .\winopt.ps1 apply full -Only taskbar-news,fx-aero-peek
   .\winopt.ps1 restore
@@ -12,19 +15,22 @@
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('list', 'status', 'apply', 'restore')]
-    [string]$Command = 'status',
+    [ValidateSet('menu', 'list', 'status', 'backups', 'apply', 'restore')]
+    [string]$Command = 'menu',
 
     [Parameter(Position = 1)]
     [string]$Preset = 'basic',
 
     [string[]]$Only,
     [string]$From,
-    [switch]$Yes
+    [switch]$Yes,
+    [switch]$Elevate
 )
 
 $ErrorActionPreference = 'Stop'
 $BackupDir = Join-Path $PSScriptRoot 'backups'
+$ExitCode = 0
+$Rebooting = $false
 
 # --- helpers ---------------------------------------------------------------
 
@@ -35,6 +41,11 @@ function Get-OsTag {
 function Test-Admin {
     $id = [Security.Principal.WindowsIdentity]::GetCurrent()
     ([Security.Principal.WindowsPrincipal]$id).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+# User signed in at the console; empty when unknown (e.g. remote session).
+function Get-ConsoleUser {
+    try { [string](Get-CimInstance Win32_ComputerSystem).UserName } catch { '' }
 }
 
 function Test-NeedsAdmin($tweak) {
@@ -91,6 +102,7 @@ function Confirm-Run {
 function Restart-Pc {
     Write-Host "Restarting in $RebootDelay seconds. To cancel, run: shutdown /a" -ForegroundColor Yellow
     shutdown.exe /r /t $RebootDelay /c 'winopt: restarting to apply changes'
+    $script:Rebooting = $true
 }
 
 function Get-Tweaks {
@@ -172,9 +184,9 @@ function Invoke-Apply($tweaks) {
             Write-Host "  failed   $($t.id): $($_.Exception.Message)" -ForegroundColor Red
         }
     }
-    if ($failed.Count -eq $todo.Count) { Write-Host 'No tweak was applied. Skipping restart.' -ForegroundColor Red; exit 1 }
+    if ($failed) { $script:ExitCode = 1 }
+    if ($failed.Count -eq $todo.Count) { Write-Host 'No tweak was applied. Skipping restart.' -ForegroundColor Red; return }
     Restart-Pc
-    if ($failed) { exit 1 }
 }
 
 # Mark a backup as used so the next restore steps back further.
@@ -195,8 +207,17 @@ function Invoke-Restore {
     $backup = Get-Content $file -Raw -Encoding UTF8 | ConvertFrom-Json
     Write-Host "Restoring from: $file"
 
+    # Only restore values winopt itself manages, so a tampered backup cannot write anything else.
+    $known = @{}
+    (Get-Content (Join-Path $PSScriptRoot 'tweaks.json') -Raw -Encoding UTF8 | ConvertFrom-Json).tweaks.values |
+        ForEach-Object { $known["$($_.path)|$($_.name)"] = $true }
+    $types = 'DWord', 'QWord', 'String', 'ExpandString', 'MultiString', 'Binary'
+    $valid = @($backup.values | Where-Object { $known["$($_.path)|$($_.name)"] -and (-not $_.exists -or $types -contains $_.type) })
+    $rejected = @($backup.values).Count - $valid.Count
+    if ($rejected) { Write-Host "Ignored $rejected unknown values in this backup." -ForegroundColor Red }
+
     # Only values that differ from the backup need work.
-    $records = @($backup.values | Where-Object {
+    $records = @($valid | Where-Object {
         $cur = Read-Value $_.path $_.name
         -not ($cur.exists -eq $_.exists -and (-not $_.exists -or (Test-ValueMatch $cur $_)))
     })
@@ -232,8 +253,109 @@ function Invoke-Restore {
     }
     Write-Host "Restored $done values." -ForegroundColor Green
     if (-not $failed) { Set-Restored $file }
+    if ($failed) { $script:ExitCode = 1 }
     if ($done) { Restart-Pc } else { Write-Host 'Nothing was restored. Skipping restart.' -ForegroundColor Red }
-    if ($failed) { exit 1 }
+}
+
+# All backups, newest first.
+function Get-Backups {
+    $i = 0
+    Get-ChildItem $BackupDir -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like '*.json' -or $_.Name -like '*.json.restored' } |
+        Sort-Object LastWriteTime -Descending | ForEach-Object {
+            $b = try { Get-Content $_.FullName -Raw -Encoding UTF8 | ConvertFrom-Json } catch { $null }
+            [pscustomobject]@{
+                '#'    = ++$i
+                Date   = $_.LastWriteTime.ToString('yyyy-MM-dd HH:mm')
+                Preset = $(if ($b) { $b.preset } else { '?' })
+                Values = $(if ($b) { @($b.values).Count } else { 0 })
+                Used   = $(if ($_.Name -like '*.restored') { 'yes' } else { 'no' })
+                Path   = $_.FullName
+            }
+        }
+}
+
+function Invoke-Backups {
+    $list = @(Get-Backups)
+    if (-not $list) { Write-Host 'No backups yet.' -ForegroundColor Yellow; return $list }
+    $list | Select-Object '#', Date, Preset, Values, Used | Format-Table -AutoSize | Out-String | Write-Host
+    $list
+}
+
+# --- menu ------------------------------------------------------------------
+
+# Relaunch as admin via UAC. Returns $true when the elevated copy took over.
+function Request-Admin {
+    $argList = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"", 'menu')
+    try {
+        Start-Process powershell.exe -Verb RunAs -ArgumentList $argList -WorkingDirectory $PSScriptRoot
+        return $true
+    } catch {
+        $n = @($script:Tweaks | Where-Object { Test-NeedsAdmin $_ }).Count
+        Write-Host "Admin was not granted. $n tweaks need admin and will be skipped." -ForegroundColor Yellow
+        $answer = Read-Host 'Continue without admin? [y/N]'
+        if ($answer -match '^(y|yes)$') { return $false }
+        exit 0
+    }
+}
+
+function Wait-Enter { [void](Read-Host 'Press Enter to continue') }
+
+function Invoke-Menu {
+    if ($Elevate -and -not $IsAdmin -and (Request-Admin)) { return }
+
+    $me = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+    $console = Get-ConsoleUser
+    $otherUser = $console -and ($console -ne $me)
+
+    $items = [ordered]@{
+        '1' = 'Status'
+        '2' = 'Preview basic'
+        '3' = 'Apply basic'
+        '4' = 'Preview full'
+        '5' = 'Apply full'
+        '6' = 'Restore last change'
+        '7' = 'Restore from a backup...'
+        '8' = 'List tweaks'
+        '0' = 'Exit'
+    }
+    while ($true) {
+        Write-Host ''
+        Write-Host "winopt - Windows $Os cleanup    [admin: $(if ($IsAdmin) { 'yes' } else { 'no' })]" -ForegroundColor Cyan
+        if ($otherUser) {
+            Write-Host "WARNING: running as $me, but $console is signed in. Changes will apply to $me." -ForegroundColor Red
+        }
+        $items.GetEnumerator() | ForEach-Object { Write-Host " $($_.Key). $($_.Value)" }
+        $choice = Read-Host 'Choose'
+        if ($null -eq $choice -or $choice -eq '0') { return }
+        if (-not $items.Contains($choice)) { continue }
+
+        try {
+            $script:From = $null; $script:Only = $null
+            switch ($choice) {
+                '1' { Invoke-Status $script:Tweaks }
+                '2' { $script:Preset = 'basic'; $WhatIfPreference = $true; Invoke-Apply $script:Tweaks; $WhatIfPreference = $false }
+                '3' { $script:Preset = 'basic'; Invoke-Apply $script:Tweaks }
+                '4' { $script:Preset = 'full'; $WhatIfPreference = $true; Invoke-Apply $script:Tweaks; $WhatIfPreference = $false }
+                '5' { $script:Preset = 'full'; Invoke-Apply $script:Tweaks }
+                '6' { Invoke-Restore }
+                '7' {
+                    $list = @(Invoke-Backups)
+                    if ($list) {
+                        $pick = Read-Host 'Choose backup (0 = back)'
+                        $hit = $list | Where-Object { [string]$_.'#' -eq $pick }
+                        if ($hit) { $script:From = $hit.Path; Invoke-Restore }
+                    }
+                }
+                '8' { Invoke-List $script:Tweaks }
+            }
+        } catch {
+            $WhatIfPreference = $false
+            Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+        }
+        if ($script:Rebooting) { Wait-Enter; return }
+        Wait-Enter
+    }
 }
 
 # --- main ------------------------------------------------------------------
@@ -243,11 +365,13 @@ try {
     $IsAdmin = Test-Admin
     if ($Os -ne '10') { throw "Windows $Os is not supported yet." }
 
-    $tweaks = Get-Tweaks
+    $Tweaks = Get-Tweaks
     switch ($Command) {
-        'list'    { Invoke-List $tweaks }
-        'status'  { Invoke-Status $tweaks }
-        'apply'   { Invoke-Apply $tweaks }
+        'menu'    { Invoke-Menu }
+        'list'    { Invoke-List $Tweaks }
+        'status'  { Invoke-Status $Tweaks }
+        'backups' { [void](Invoke-Backups) }
+        'apply'   { Invoke-Apply $Tweaks }
         'restore' { Invoke-Restore }
     }
 } catch {
@@ -255,3 +379,4 @@ try {
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
+exit $ExitCode

@@ -4,8 +4,29 @@ PowerShell CLI that declutters Windows 10: hides News and Interests, extra taskb
 
 See [TWEAKS.md](TWEAKS.md) for every tweak, why it was chosen, and which tweaks are left out on purpose.
 
+## Quick start
+1. Download the ZIP from GitHub. Right-click it > Properties > tick **Unblock** > OK, then extract. This avoids Windows SmartScreen warnings.
+2. Double-click `winopt.bat` and click **Yes** on the admin prompt.
+3. Pick an option from the menu:
+
+```
+ 1. Status
+ 2. Preview basic
+ 3. Apply basic
+ 4. Preview full
+ 5. Apply full
+ 6. Restore last change
+ 7. Restore from a backup...
+ 8. List tweaks
+ 0. Exit
+```
+
+Apply and restore still show the red warning, ask `[y/N]` and restart the computer.
+If you click **No** on the admin prompt, the menu offers to continue without admin (admin-only tweaks are skipped).
+If the admin prompt uses a different account than the one signed in, the menu shows a red warning: changes go to that other account.
+
 ## Usage
-Run from this folder. No need to change the machine's ExecutionPolicy:
+Command line, from this folder. No need to change the machine's ExecutionPolicy:
 
 ```
 powershell -ExecutionPolicy Bypass -File .\winopt.ps1 <command>
@@ -13,7 +34,9 @@ powershell -ExecutionPolicy Bypass -File .\winopt.ps1 <command>
 
 | Command | Description |
 |---|---|
+| (no command) | Interactive menu (add `-Elevate` to ask for admin, as `winopt.bat` does) |
 | `list` | List all tweaks |
+| `backups` | List all backups, newest first (`Used = yes` means already restored once) |
 | `status` | Show each tweak's state: `applied`, `partial` or `default` |
 | `apply basic -WhatIf` | Preview changes without writing anything |
 | `apply basic` | Back up, apply the `basic` preset, then restart |
