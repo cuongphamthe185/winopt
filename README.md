@@ -15,7 +15,7 @@ powershell -ExecutionPolicy Bypass -File .\winopt.ps1 <command>
 | `status` | Show each tweak's state: `applied`, `partial` or `default` |
 | `apply basic -WhatIf` | Preview changes without writing anything |
 | `apply basic` | Back up, apply the `basic` preset, then restart |
-| `apply full` | Same as `basic`, plus disables visual effects (transparency, Aero Peek, animations) |
+| `apply full` | Same as `basic`, plus disables visual effects (transparency, Aero Peek, animations, shadows) |
 | `apply full -Only taskbar-news,fx-aero-peek` | Apply only the listed tweaks |
 | `restore` | Undo the last `apply`, then restart; run again to step back further |
 | `restore -From backups\<file>.json` | Restore from a specific backup |
@@ -31,7 +31,8 @@ powershell -ExecutionPolicy Bypass -File .\winopt.ps1 <command>
 
 ## Notes
 - Most tweaks apply to the **current user** only. Run once per user.
-- `taskbar-news`, `taskbar-meetnow` and `search-web-policy` need admin (see the `Admin` column in `list`). Run PowerShell as Administrator from the same user account.
+- `taskbar-news`, `taskbar-meetnow`, `search-web-policy` and `perf-delivery-opt` need admin (see the `Admin` column in `list`).
+- The `performance` group only uses safe, reversible settings. Risky tweaks (disabling Defender, VBS, page file, services, System Restore, DNS cache, GPU scheduling) are intentionally not included. Run PowerShell as Administrator from the same user account.
 - Backups in `backups/` contain machine and user names and are git-ignored.
 
 ## Adding a tweak
