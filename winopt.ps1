@@ -177,6 +177,11 @@ function Invoke-Apply($tweaks) {
     if ($failed) { exit 1 }
 }
 
+# Mark a backup as used so the next restore steps back further.
+function Set-Restored($file) {
+    if ($file -notlike '*.restored') { Rename-Item $file ((Split-Path $file -Leaf) + '.restored') }
+}
+
 function Invoke-Restore {
     $file = if ($From) { $From } else {
         Get-ChildItem $BackupDir -Filter '*.json' -ErrorAction SilentlyContinue |
@@ -197,7 +202,7 @@ function Invoke-Restore {
     })
     if (-not $records) {
         Write-Host 'Your system already matches this backup. Nothing to restore.' -ForegroundColor Green
-        if (-not $WhatIfPreference) { Rename-Item $file ((Split-Path $file -Leaf) + '.restored') }
+        if (-not $WhatIfPreference) { Set-Restored $file }
         return
     }
     [array]::Reverse($records)
@@ -226,8 +231,7 @@ function Invoke-Restore {
         }
     }
     Write-Host "Restored $done values." -ForegroundColor Green
-    # Mark as used so the next restore steps back further.
-    if (-not $failed) { Rename-Item $file ((Split-Path $file -Leaf) + '.restored') }
+    if (-not $failed) { Set-Restored $file }
     if ($done) { Restart-Pc } else { Write-Host 'Nothing was restored. Skipping restart.' -ForegroundColor Red }
     if ($failed) { exit 1 }
 }
