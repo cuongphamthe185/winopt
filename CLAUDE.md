@@ -10,7 +10,9 @@ PowerShell CLI that hides Windows UI clutter (taskbar items, ads, suggestions) v
 
 ## Rules
 - Code language: all code, identifiers, comments, JSON data, output messages and commit messages in English. Keep them short and readable.
+- Commit messages: English, one short line.
 - Communication with the user: always reply in Vietnamese, short but complete.
+- Ask before changing the system: any run that writes to the machine (`apply` or `restore` without `-WhatIf`, direct registry edits) needs the user's review and OK first. Read-only runs (`list`, `status`, `-WhatIf`) are fine.
 - Security check after every task: before finishing or committing, review the diff and outputs for keys, tokens, passwords, credentials or personal data (user names, machine names, emails, paths with user names). Never commit `backups/`. Report the result of this check to the user.
 
 ## Tweak conventions
