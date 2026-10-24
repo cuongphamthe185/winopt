@@ -182,7 +182,11 @@ function Invoke-Restore {
         Get-ChildItem $BackupDir -Filter '*.json' -ErrorAction SilentlyContinue |
             Sort-Object LastWriteTime | Select-Object -Last 1 -ExpandProperty FullName
     }
-    if (-not $file -or -not (Test-Path $file)) { throw 'No backup found.' }
+    if ($From -and -not (Test-Path $From)) { throw "Backup file not found: $From" }
+    if (-not $file) {
+        Write-Host 'No backup to restore. Nothing was changed.' -ForegroundColor Yellow
+        return
+    }
     $backup = Get-Content $file -Raw -Encoding UTF8 | ConvertFrom-Json
     Write-Host "Restoring from: $file"
 
@@ -230,14 +234,20 @@ function Invoke-Restore {
 
 # --- main ------------------------------------------------------------------
 
-$Os = Get-OsTag
-$IsAdmin = Test-Admin
-if ($Os -ne '10') { throw "Windows $Os is not supported yet." }
+try {
+    $Os = Get-OsTag
+    $IsAdmin = Test-Admin
+    if ($Os -ne '10') { throw "Windows $Os is not supported yet." }
 
-$tweaks = Get-Tweaks
-switch ($Command) {
-    'list'    { Invoke-List $tweaks }
-    'status'  { Invoke-Status $tweaks }
-    'apply'   { Invoke-Apply $tweaks }
-    'restore' { Invoke-Restore }
+    $tweaks = Get-Tweaks
+    switch ($Command) {
+        'list'    { Invoke-List $tweaks }
+        'status'  { Invoke-Status $tweaks }
+        'apply'   { Invoke-Apply $tweaks }
+        'restore' { Invoke-Restore }
+    }
+} catch {
+    # One readable line instead of a PowerShell stack trace.
+    Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+    exit 1
 }
