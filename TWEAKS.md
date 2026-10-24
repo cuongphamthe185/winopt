@@ -85,13 +85,3 @@ Suggested by some articles but rejected because they reduce security, risk data 
 | Auto-enable Storage Sense | Deletes user files automatically. |
 | Processor scheduling for background services | Only helps audio workstations; slows normal use. |
 | High/Ultimate performance power plan | Not a registry setting; heats laptops and drains battery. |
-
-## Sources
-- Microsoft Support: [Tips to improve PC performance in Windows](https://support.microsoft.com/en-us/windows/experience/performance-optimization/tips-to-improve-pc-performance-in-windows)
-- Ten Forums: [Optimize Performance of Windows 10](https://www.tenforums.com/threads/optimize-performance-of-windows-10.26120/)
-- Apogee: [Windows 10 optimization guide](https://knowledge.apogeedigital.com/windows-10-optimization-guide)
-- Netdata: [How to speed up Windows 10 & 11](https://www.netdata.cloud/academy/how-to-speed-up-windows/)
-- PCWorld: [12 easy tweaks for Windows 11](https://www.pcworld.com/article/2658977/12-simple-tweaks-that-maximize-your-windows-11-pcs-speed.html)
-- HP: [Windows 11 settings that make your laptop faster](https://www.hp.com/us-en/tech-takes/software/how-to/windows-11-performance-settings-laptop.html)
-- Medium: [How to speed up Windows 11 in 2026](https://medium.com/@Ella456/how-to-speed-up-windows-11-in-2026-10-tweaks-that-actually-work-7cc8eda0efec)
-- Windows Forum: [Dangerous "safe" registry tweaks](https://windowsforum.com/news/dangerous-safe-windows-registry-tweaks-hidden-risks-better-alternatives.410382/)
