@@ -7,6 +7,7 @@
   .\winopt.ps1 apply basic -WhatIf
   .\winopt.ps1 apply full -Only taskbar-news,fx-aero-peek
   .\winopt.ps1 restore
+  .\winopt.ps1 apply full -Yes   # no prompt, still reboots
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
@@ -19,7 +20,7 @@ param(
 
     [string[]]$Only,
     [string]$From,
-    [switch]$NoRestart
+    [switch]$Yes
 )
 
 $ErrorActionPreference = 'Stop'
@@ -70,12 +71,26 @@ function Get-TweakState($tweak) {
     if ($hits -eq $tweak.values.Count) { 'applied' } elseif ($hits -gt 0) { 'partial' } else { 'default' }
 }
 
-function Restart-Explorer {
-    if ($NoRestart) { return }
-    Write-Host 'Restarting Explorer...'
-    Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
-    Start-Sleep -Seconds 2
-    if (-not (Get-Process explorer -ErrorAction SilentlyContinue)) { Start-Process explorer }
+$RebootDelay = 10
+
+# Real runs always reboot; -WhatIf only previews. Returns $true to continue.
+function Confirm-Run {
+    if ($WhatIfPreference) {
+        Write-Host 'Note: a real run will restart your computer.' -ForegroundColor Yellow
+        return $false
+    }
+    Write-Host "WARNING: This will change system settings and restart your computer in $RebootDelay seconds." -ForegroundColor Red
+    Write-Host 'Save your work and close all apps before continuing.' -ForegroundColor Red
+    if ($Yes) { Write-Host 'Confirmed by -Yes.'; return $true }
+    $answer = try { Read-Host 'Continue? [y/N]' } catch { '' }
+    if ($answer -match '^(y|yes)$') { return $true }
+    Write-Host 'Cancelled. No changes were made.'
+    $false
+}
+
+function Restart-Pc {
+    Write-Host "Restarting in $RebootDelay seconds. To cancel, run: shutdown /a" -ForegroundColor Yellow
+    shutdown.exe /r /t $RebootDelay /c 'winopt: restarting to apply changes'
 }
 
 function Get-Tweaks {
@@ -119,20 +134,25 @@ function Invoke-Apply($tweaks) {
         $todo += $t
     }
     if ($skipped) { Write-Warning "Needs admin, skipped: $($skipped -join ', ')" }
-    if (-not $todo) { Write-Host 'Nothing to change.'; return }
-
-    if ($WhatIfPreference) {
-        $rows = foreach ($t in $todo) {
-            foreach ($v in $t.values) {
-                $cur = Read-Value $v.path $v.name
-                if (Test-ValueMatch $cur $v) { continue }
-                $old = if ($cur.exists) { @($cur.value) -join ',' } else { '(unset)' }
-                [pscustomobject]@{ Id = $t.id; Value = $v.name; Current = $old; New = $v.value }
-            }
+    if (-not $todo) {
+        if ($skipped) {
+            Write-Host "All other tweaks in preset '$Preset' are already applied. Run as Administrator to apply the rest." -ForegroundColor Yellow
+        } else {
+            Write-Host "Your system is already optimized for preset '$Preset'. No changes needed." -ForegroundColor Green
         }
-        $rows | Format-Table -AutoSize | Out-String -Width 200 | Write-Host
         return
     }
+
+    $rows = foreach ($t in $todo) {
+        foreach ($v in $t.values) {
+            $cur = Read-Value $v.path $v.name
+            if (Test-ValueMatch $cur $v) { continue }
+            $old = if ($cur.exists) { @($cur.value) -join ',' } else { '(unset)' }
+            [pscustomobject]@{ Id = $t.id; Value = $v.name; Current = $old; New = $v.value }
+        }
+    }
+    $rows | Format-Table -AutoSize | Out-String -Width 200 | Write-Host
+    if (-not (Confirm-Run)) { return }
 
     # Backup every value we touch, then write.
     $records = @($todo | ForEach-Object { $_.values } | ForEach-Object { Read-Value $_.path $_.name })
@@ -152,8 +172,8 @@ function Invoke-Apply($tweaks) {
             Write-Host "  failed   $($t.id): $($_.Exception.Message)" -ForegroundColor Red
         }
     }
-    Restart-Explorer
-    if ($todo.group -contains 'effects') { Write-Host 'Sign out and back in to fully apply visual effects.' }
+    if ($failed.Count -eq $todo.Count) { Write-Host 'No tweak was applied. Skipping restart.' -ForegroundColor Red; exit 1 }
+    Restart-Pc
     if ($failed) { exit 1 }
 }
 
@@ -166,13 +186,24 @@ function Invoke-Restore {
     $backup = Get-Content $file -Raw -Encoding UTF8 | ConvertFrom-Json
     Write-Host "Restoring from: $file"
 
-    $records = @($backup.values); [array]::Reverse($records)
+    # Only values that differ from the backup need work.
+    $records = @($backup.values | Where-Object {
+        $cur = Read-Value $_.path $_.name
+        -not ($cur.exists -eq $_.exists -and (-not $_.exists -or (Test-ValueMatch $cur $_)))
+    })
+    if (-not $records) {
+        Write-Host 'Your system already matches this backup. Nothing to restore.' -ForegroundColor Green
+        if (-not $WhatIfPreference) { Rename-Item $file ((Split-Path $file -Leaf) + '.restored') }
+        return
+    }
+    [array]::Reverse($records)
+    $records | ForEach-Object {
+        [pscustomobject]@{ Value = "$($_.path)\$($_.name)"; Restore = $(if ($_.exists) { @($_.value) -join ',' } else { '(unset)' }) }
+    } | Format-Table -AutoSize | Out-String -Width 200 | Write-Host
+    if (-not (Confirm-Run)) { return }
+
     $done = 0; $failed = 0
     foreach ($r in $records) {
-        $cur = Read-Value $r.path $r.name
-        if ($cur.exists -eq $r.exists -and (-not $r.exists -or (Test-ValueMatch $cur $r))) { continue }
-        $state = if ($r.exists) { @($r.value) -join ',' } else { '(unset)' }
-        if ($WhatIfPreference) { Write-Host "  $($r.path)\$($r.name) -> $state"; continue }
         try {
             if ($r.exists) {
                 Write-Value $r.path $r.name $r.type $r.value
@@ -190,13 +221,11 @@ function Invoke-Restore {
             Write-Host "  failed   $($r.path)\$($r.name): $($_.Exception.Message)" -ForegroundColor Red
         }
     }
-    if ($WhatIfPreference) { return }
-
     Write-Host "Restored $done values." -ForegroundColor Green
-    Restart-Explorer
-    if ($failed) { exit 1 }
     # Mark as used so the next restore steps back further.
-    Rename-Item $file ((Split-Path $file -Leaf) + '.restored')
+    if (-not $failed) { Rename-Item $file ((Split-Path $file -Leaf) + '.restored') }
+    if ($done) { Restart-Pc } else { Write-Host 'Nothing was restored. Skipping restart.' -ForegroundColor Red }
+    if ($failed) { exit 1 }
 }
 
 # --- main ------------------------------------------------------------------

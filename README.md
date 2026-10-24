@@ -14,18 +14,24 @@ powershell -ExecutionPolicy Bypass -File .\winopt.ps1 <command>
 | `list` | List all tweaks |
 | `status` | Show each tweak's state: `applied`, `partial` or `default` |
 | `apply basic -WhatIf` | Preview changes without writing anything |
-| `apply basic` | Back up, then apply the `basic` preset |
+| `apply basic` | Back up, apply the `basic` preset, then restart |
 | `apply full` | Same as `basic`, plus disables visual effects (transparency, Aero Peek, animations) |
 | `apply full -Only taskbar-news,fx-aero-peek` | Apply only the listed tweaks |
-| `restore` | Undo the last `apply`; run again to step back further |
+| `restore` | Undo the last `apply`, then restart; run again to step back further |
 | `restore -From backups\<file>.json` | Restore from a specific backup |
 
-Add `-NoRestart` to skip restarting Explorer.
+## Confirmation and restart
+- `apply` and `restore` first list what will change, then show a red warning and ask `Continue? [y/N]`. Only `y` continues; anything else stops with no changes.
+- After changes are made, **the computer restarts in 10 seconds**. Save your work first. To cancel the restart, run `shutdown /a`.
+- The restart is required. Applying without it can leave Windows unstable until the next reboot.
+- If nothing needs to change, the script says so and exits without asking or restarting.
+- `-WhatIf` never asks, changes or restarts anything.
+- `-Yes` skips the `[y/N]` prompt (e.g. `apply full -Yes`). The red warning is still shown and **the computer still restarts in 10 seconds without asking**. Use it only for unattended runs across many machines; regular users should not add it.
+- There is no option to skip the restart.
 
 ## Notes
 - Most tweaks apply to the **current user** only. Run once per user.
 - `taskbar-news`, `taskbar-meetnow` and `search-web-policy` need admin (see the `Admin` column in `list`). Run PowerShell as Administrator from the same user account.
-- The `effects` group needs a sign-out to fully apply.
 - Backups in `backups/` contain machine and user names and are git-ignored.
 
 ## Adding a tweak
