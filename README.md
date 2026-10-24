@@ -2,6 +2,8 @@
 
 PowerShell CLI that declutters Windows 10: hides News and Interests, extra taskbar buttons, ads, suggestions and Bing results. Every change is backed up and can be restored.
 
+See [TWEAKS.md](TWEAKS.md) for every tweak, why it was chosen, and which tweaks are left out on purpose.
+
 ## Usage
 Run from this folder. No need to change the machine's ExecutionPolicy:
 
