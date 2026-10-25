@@ -12,7 +12,6 @@ Removes taskbar items most users never click. Cosmetic only; nothing is uninstal
 | Id | Win | What it does | Admin | Why |
 |---|---|---|---|---|
 | `taskbar-news` | 10 | Hides News and Interests (weather) | Yes | Constant background web content. The user key is ACL-protected on recent builds, so the policy key is used. |
-| `taskbar-widgets` | 11 | Disables Widgets and its taskbar button | Yes | MSN news feed with sponsored posts. The user value `TaskbarDa` is locked by the UCPD driver on current builds, so the policy key is used. |
 | `taskbar-search-icon` | 10, 11 | Search box becomes an icon | | Frees taskbar space; search still works. |
 | `taskbar-taskview` | 10, 11 | Hides Task View button | | `Win+Tab` still works. |
 | `taskbar-cortana` | 10 | Hides Cortana button | | Cortana is retired. |
@@ -99,7 +98,7 @@ Suggested by some articles but rejected because they reduce security, risk data 
 | Auto-enable Storage Sense | Deletes user files automatically. |
 | Processor scheduling for background services | Only helps audio workstations; slows normal use. |
 | High/Ultimate performance power plan | Not a registry setting; heats laptops and drains battery. |
-| Widgets via `TaskbarDa` (Windows 11) | Locked by the UCPD driver; writing it fails. The `Dsh` policy is used instead. |
+| Disable Widgets (Windows 11) | Both the user value `TaskbarDa` and the policy `Dsh\AllowNewsAndInterests` are locked by the UCPD driver on current builds; writing them fails even as admin. Turn Widgets off in Settings > Personalization > Taskbar. |
 | Chat button `TaskbarMn` (Windows 11) | Chat was removed from current Windows 11. |
 | Copilot button / `TurnOffWindowsCopilot` (Windows 11) | Copilot is now a normal app; uninstall it in Settings instead. |
 | Uninstall Widgets, Copilot or other apps | Not a registry setting and not undoable by `restore`. |

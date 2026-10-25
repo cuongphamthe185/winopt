@@ -1,6 +1,6 @@
 # winopt
 
-PowerShell CLI that declutters Windows 10 and 11: hides News and Interests / Widgets, extra taskbar buttons, ads, suggestions and Bing results. Every change is backed up and can be restored.
+PowerShell CLI that declutters Windows 10 and 11: hides News and Interests (Windows 10), extra taskbar buttons, ads, suggestions and Bing results. Every change is backed up and can be restored.
 
 See [TWEAKS.md](TWEAKS.md) for every tweak, why it was chosen, and which tweaks are left out on purpose.
 
@@ -50,6 +50,7 @@ powershell -ExecutionPolicy Bypass -File .\winopt.ps1 <command>
 - After changes are made, **the computer restarts in 10 seconds**. Save your work first. To cancel the restart, run `shutdown /a`.
 - The restart is required. Applying without it can leave Windows unstable until the next reboot.
 - If nothing needs to change, the script says so and exits without asking or restarting.
+- If a tweak cannot be written (for example Windows blocks it), whatever it already wrote is undone and the other tweaks continue. If no tweak could be applied, the backup is removed and the computer does not restart.
 - `-WhatIf` never asks, changes or restarts anything.
 - `-Yes` skips the `[y/N]` prompt (e.g. `apply full -Yes`). The red warning is still shown and **the computer still restarts in 10 seconds without asking**. Use it only for unattended runs across many machines; regular users should not add it.
 - There is no option to skip the restart.

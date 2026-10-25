@@ -23,6 +23,7 @@ PowerShell CLI that hides Windows UI clutter (taskbar items, ads, suggestions) v
 - `-Yes` skips only the prompt (for unattended runs); the warning and reboot still happen. Keep docs warning that it reboots without asking.
 - The menu keeps the same warning, prompt and reboot as the CLI. Never add a menu path that writes without confirmation.
 - Menu self-elevation only with `-Elevate`. Warn in red when the elevated user differs from the console user (changes go to that user's HKCU).
+- A tweak that fails to write is undone (values and keys it created); the rest continue. If every tweak failed, delete that run's backup (it would become the "last change") and do not reboot.
 - Nothing pending: print a clear message and exit without prompt or reboot. `-WhatIf` never prompts or reboots, and notes that a real run reboots.
 
 ## Windows version and edition
@@ -36,7 +37,7 @@ PowerShell CLI that hides Windows UI clutter (taskbar items, ads, suggestions) v
 ## Tweak conventions
 - Every tweak must be reversible by `restore`; never delete a key or value that existed before.
 - Prefer HKCU. Paths under HKLM or any `\Policies\` key are treated as admin-only and skipped without elevation.
-- Some HKCU keys are ACL-protected on recent Windows 10 builds (e.g. `CurrentVersion\Feeds`), and on Windows 11 the UCPD driver blocks some values (e.g. `TaskbarDa`); use the matching policy key instead.
+- Some HKCU keys are ACL-protected on recent Windows 10 builds (e.g. `CurrentVersion\Feeds`), and on Windows 11 the UCPD driver blocks some values even for admins (e.g. `TaskbarDa` and the Widgets policy `Dsh\AllowNewsAndInterests`). Use the matching policy key where one works; otherwise leave the tweak out.
 - Supported value types: `DWord`, `QWord`, `String`, `ExpandString`, `MultiString`, `Binary`.
 - Test new tweaks with `apply <preset> -WhatIf` first. Real runs reboot the PC, so the user runs them.
 

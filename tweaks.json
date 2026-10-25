@@ -10,15 +10,6 @@
       ]
     },
     {
-      "id": "taskbar-widgets",
-      "group": "taskbar",
-      "os": ["11"],
-      "name": "Disable Widgets and its taskbar button (policy)",
-      "values": [
-        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Dsh", "name": "AllowNewsAndInterests", "type": "DWord", "value": 0 }
-      ]
-    },
-    {
       "id": "taskbar-search-icon",
       "group": "taskbar",
       "os": ["10", "11"],

@@ -234,6 +234,8 @@ function Invoke-Apply($tweaks) {
         ConvertTo-Json -Depth 5 | Set-Content $file -Encoding UTF8
     Write-Host "Backup: $file"
 
+    $before = @{}
+    $records | ForEach-Object { $before["$($_.path)|$($_.name)"] = $_ }
     $failed = @()
     foreach ($t in $todo) {
         try {
@@ -242,11 +244,32 @@ function Invoke-Apply($tweaks) {
         } catch {
             $failed += $t.id
             Write-Host "  failed   $($t.id): $($_.Exception.Message)" -ForegroundColor Red
+            # Undo whatever this tweak wrote before failing, including keys it created.
+            foreach ($v in $t.values) {
+                try { Reset-Value $before["$($v.path)|$($v.name)"] } catch { }
+            }
         }
     }
     if ($failed) { $script:ExitCode = 1 }
-    if ($failed.Count -eq $todo.Count) { Write-Host 'No tweak was applied. Skipping restart.' -ForegroundColor Red; return }
+    if ($failed.Count -eq $todo.Count) {
+        # A backup of a run that changed nothing would become the "last change" for restore.
+        Remove-Item $file
+        Write-Host 'No tweak was applied. Backup removed, skipping restart.' -ForegroundColor Red
+        return
+    }
     Restart-Pc
+}
+
+# Put one value back to its backed-up state; drops keys winopt created once they are empty.
+function Reset-Value($r) {
+    if ($r.exists) { Write-Value $r.path $r.name $r.type $r.value; return }
+    $key = Get-Item -LiteralPath $r.path -ErrorAction SilentlyContinue
+    if (-not $key) { return }
+    if ($key.GetValueNames() -contains $r.name) { Remove-ItemProperty -LiteralPath $r.path -Name $r.name }
+    $key = Get-Item -LiteralPath $r.path
+    if (-not $r.keyExisted -and $key.ValueCount -eq 0 -and $key.SubKeyCount -eq 0) {
+        Remove-Item -LiteralPath $r.path
+    }
 }
 
 # Mark a backup as used so the next restore steps back further.
@@ -300,16 +323,7 @@ function Invoke-Restore {
     $done = 0; $failed = 0
     foreach ($r in $records) {
         try {
-            if ($r.exists) {
-                Write-Value $r.path $r.name $r.type $r.value
-            } else {
-                Remove-ItemProperty -LiteralPath $r.path -Name $r.name
-                # Drop keys we created if they are now empty.
-                $key = Get-Item -LiteralPath $r.path
-                if (-not $r.keyExisted -and $key.ValueCount -eq 0 -and $key.SubKeyCount -eq 0) {
-                    Remove-Item -LiteralPath $r.path
-                }
-            }
+            Reset-Value $r
             $done++
         } catch {
             $failed++
